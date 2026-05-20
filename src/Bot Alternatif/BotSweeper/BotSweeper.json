@@ -1,0 +1,10 @@
+{
+  "name": "BotSweeper",
+  "version": "1.0",
+  "authors": ["Feldy, Andreas, Jojo"],
+  "description": "Bot yang terus bergerak dalam pola melingkar besar sambil memutar meriam 360 derajat, dan langsung menembak setiap kali mendeteksi musuh.",
+  "homepage": "",
+  "countryCodes": ["id"],
+  "platform": ".Net 10.0",
+  "programmingLang": "C# 10.0"
+}
