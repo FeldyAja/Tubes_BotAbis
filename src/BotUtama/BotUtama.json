@@ -1,0 +1,10 @@
+{
+  "name": "Bot Utama",
+  "version": "1.0",
+  "authors": ["Andreas, Jojo, Feldy"],
+  "description": "A bot that drives forward and backward, and fires a bullet",
+  "homepage": "",
+  "countryCodes": ["id"],
+  "platform": ".Net 10.0",
+  "programmingLang": "C# 10.0"
+}
