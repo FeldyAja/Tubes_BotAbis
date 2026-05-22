@@ -1,0 +1,11 @@
+{
+  "name": "GreedyHunter",
+  "version": "1.0",
+  "gameTypes": "melee",
+  "authors": "Kelompok Anda",
+  "description": "Bot greedy yang mengejar dan menyerang musuh terdekat dengan firepower optimal",
+  "homepage": "",
+  "countryCodes": "ID",
+  "platform": ".Net 6.0",
+  "programmingLang": "C# 10.0"
+}

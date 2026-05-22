@@ -1,0 +1,11 @@
+{
+  "name": "RammerBot",
+  "version": "1.0",
+  "gameTypes": "melee",
+  "authors": "Kelompok Anda",
+  "description": "Bot greedy yang menabrak musuh lemah untuk memaksimalkan Ram Damage",
+  "homepage": "",
+  "countryCodes": "ID",
+  "platform": ".Net 6.0",
+  "programmingLang": "C# 10.0"
+}
