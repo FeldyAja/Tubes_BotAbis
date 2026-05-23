@@ -12,6 +12,7 @@
 #Bot 1: BotSweeper (Main Bot)
 Sifat Greedy: Greedy pada coverage - selalu bergerak maju sejauh mungkin sambil memutar gun 360 derajat untuk memaksimalkan area yang dipindai dan ditembak, setiap scan akan menembak seketika.
 Heuristic: Maksimalkan Bullet Damage dengan DPS (Damage Per Second) konstan menggunakan tembakan firepower 1.5 setiap kali musuh terdeteksi tanpa kalkulasi apapun, sambil terus berpatroli melingkar.
+
 Bot 2: BotPredator
 Sifat Greedy: Greedy pada target locking — bot langsung mengunci target pertama yang ditemukan dan terus mengejarnya sampai mati, tanpa mempertimbangkan apakah ada target lain yang lebih menguntungkan (lebih dekat atau lebih lemah).
 Heuristik: Maksimalkan Ram Damage + Bullet Damage dengan strategi pursue-and-ram yaitu:
