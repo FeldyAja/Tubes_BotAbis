@@ -24,6 +24,7 @@ Radar sweep 90 derajat di depan agar fokus pada target yang sedang dikejar, buka
 Bot 3: BotSentinel
 Sifat Greedy: Greedy pada posisi - langsung mencari dan menempel di tembok terdekat sebagai posisi bertahan optimal, lalu menyapu area terbuka dengan gun secara terus-menerus.
 Heuristic: Maksimalkan Survival Score dengan meminimalkan area yang bisa diserang (menempel tembok) sambil memaksimalkan scan coverage dengan rotasi gun 360 derajat. Saat kontak langsung dengan musuh, tembak firepower maksimal (3.0).
+
 Bot 4: SniperBot (Alternatif 3)
 Strategi Greedy : Bersembunyi di sudut arena dan menembak dengan peluru berat dari jauh.
 Heuristic : Maksimalkan Bullet Damage Bonus dengan selalu menggunakan firepower maksimal (3.0) dan predictive aiming untuk akurasi tinggi, sambil meminimalkan risiko terkena serangan balik.
@@ -36,36 +37,84 @@ Heuristic : Maksimalkan Bullet Damage Bonus dengan selalu menggunakan firepower 
 - Robocode Tank Royale Game Engine (versi modifikasi asisten)
 - Java JDK 17
 
-## Cara Build & Menjalankan Bot
+**Cara Menjalankan Bot:**
+**Windows**
+Di bawah ini kasus sample bot bawaan github
+Build Game Engine 
+Buka Powershell, lalu jalankan  :
 
-### Build bot
-```bash
-cd [nama-bot]
+cd tank-royale-0.30.0
+./gradlew :gui-app:clean
+./gradlew :gui-app:build
+
+
+Jalankan Game Engine
+Buka PowerShell baru, lalu jalankan :
+
+cd tank-royale-0.30.0
+java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar
+
+
+Build Bot
+Buka PowerShell baru, masuk ke folder bot, lalu jalankan : 
+
+cd sample-bots/csharp/NamaBot
+dotnet clean
+dotnet restore
 dotnet build
-dotnet publish -c Release
-```
 
-### Menjalankan bot
-1. Jalankan game engine Tank Royale terlebih dahulu
-2. Di terminal, masuk ke folder output bot:
-```bash
-cd [nama-bot]/bin/Release/net6.0/publish
-dotnet [NamaBot].dll
-```
-3. Di GUI Tank Royale, tambahkan bot melalui menu Battle > Start Battle
 
----
+Jalankan Bot 
+Masih di terminal yang sama, jalankan: 
 
-## Struktur Repository
-```
-src/
-├── main-bot/
-│   └── GreedyHunter/
-├── alternative-bots/
-│   ├── SurvivorBot/
-│   ├── RammerBot/
-│   └── SniperBot/
-doc/
-└── laporan.pdf
-README.md
-```
+$env:SERVER_SECRET = "isi_dengan_secret_dari_server.properties"
+dotnet run
+
+Mulai Pertandingan di GUI
+1. Di GUI Robocode, klik Config → Bot Root Directories
+2. Klik Add dan arahkan ke folder sample-bots/csharp 
+3. Klik OK 
+4. Klik Battle → Start Battle Di bagian Joined Bots, pilih bot yang sudah terhubung
+5. Klik Add All lalu Start Battle
+
+
+	
+
+
+**Linux**
+Di bawah ini kasus bukan sample bots bawaan github
+Build Game Engine
+Buka Vscode terminal ubuntu, lalu jalankan  :
+
+cd tank-royale-0.30.0
+./gradlew :gui-app:clean
+./gradlew :gui-app:build
+
+
+Jalankan Game Engine
+Buka terminal baru, lalu jalankan :
+
+cd tank-royale-0.30.0
+java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar
+
+Lalu mulai local server
+
+Build Bot
+Buka terminal baru, masuk ke folder bot, jalankan:
+dotnet clean
+dotnet restore
+dotnet build
+
+Jalankan Bot
+Masih di terminal yang sama, jalankan:
+export SERVER_SECRET=isi_dengan_secret_dari_server.properties
+chmod +x NamaFolderBot.sh
+./NamaFolderBot.sh
+
+Mulai Pertandingan di GUI
+Bila saat start local server hasilnya tidak merah, melainkan success hijau, maka:
+Karena file sh sudah di jalankan, cek di Start Battle pada Game Engine
+Bila berhasil, maka ada nama bot di kotak local/remote server di kiri bawah
+Add bot bot tersebut
+Lalu start battle untuk memulai pertempuran antar bot yang dipilih
+
