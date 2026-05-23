@@ -1,0 +1,14 @@
+{
+  "name": "BotSniper",
+  "version": "1.1",
+  "authors": [
+    "Feldy, Andreas, Jojo"
+  ],
+  "description": "Bot sniper greedy yang menjaga jarak aman, mundur saat musuh terlalu dekat, anti-stuck tembok, dan memakai prediksi ringan agar tembakan lebih stabil ke musuh bergerak",
+  "homepage": "",
+  "countryCodes": [
+    "id"
+  ],
+  "platform": ".Net 10.0",
+  "programmingLang": "C# 10.0"
+}
