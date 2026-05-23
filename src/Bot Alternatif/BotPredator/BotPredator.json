@@ -2,7 +2,7 @@
   "name": "BotPredator",
   "version": "1.3",
   "authors": ["Feldy, Andreas, Jojo"],
-  "description": "Bot agresif yang memburu musuh tanpa pernah mundur, bergerak maju sambil bermanuver ke kanan, lalu menekan lawan dengan tabrakan dan tembakan jarak dekat",
+  "description": "`BotPredator` adalah bot agresif pada Robocode yang mencari, mengejar, menabrak, dan menembak musuh secara terus-menerus.",
   "homepage": "",
   "countryCodes": ["id"],
   "platform": ".Net 10.0",
