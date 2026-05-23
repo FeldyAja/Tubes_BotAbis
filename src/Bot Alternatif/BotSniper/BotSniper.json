@@ -1,0 +1,10 @@
+{
+  "name": "BotSniper",
+  "version": "1.0",
+  "authors": ["Feldy, Andreas, Jojo"],
+  "description": "Bot sniper yang menjaga jarak aman, menjauh saat musuh terlalu dekat, lalu mengunci meriam dan menembak target terdekat dari jarak ideal",
+  "homepage": "",
+  "countryCodes": ["id"],
+  "platform": ".Net 10.0",
+  "programmingLang": "C# 10.0"
+}
