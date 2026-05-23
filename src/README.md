@@ -37,32 +37,32 @@ Heuristic : Maksimalkan Bullet Damage Bonus dengan selalu menggunakan firepower 
 - Robocode Tank Royale Game Engine (versi modifikasi asisten)
 - Java JDK 17
 
-Cara Menjalankan Bot — Robocode Tank Royale
+**Cara Menjalankan Bot — Robocode Tank Royale**
 
-🪟 Windows
+** Windows**
 
 Kasus: menggunakan sample bot bawaan GitHub
 
-1. Build Game Engine
+**1. Build Game Engine**
 Buka PowerShell, lalu jalankan:
 powershellcd tank-royale-0.30.0
 ./gradlew :gui-app:clean
 ./gradlew :gui-app:build
-2. Jalankan Game Engine
+**2. Jalankan Game Engine**
 Buka PowerShell baru, lalu jalankan:
 powershellcd tank-royale-0.30.0
 java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar
-3. Build Bot
+**3. Build Bot**
 Buka PowerShell baru, masuk ke folder bot, lalu jalankan:
 powershellcd sample-bots/csharp/NamaBot
 dotnet clean
 dotnet restore
 dotnet build
-4. Jalankan Bot
+**4. Jalankan Bot**
 Masih di terminal yang sama, jalankan:
 powershell$env:SERVER_SECRET = "isi_dengan_secret_dari_server.properties"
 dotnet run
-5. Mulai Pertandingan di GUI
+**5. Mulai Pertandingan di GUI**
 
 Di GUI Robocode, klik Config → Bot Root Directories
 Klik Add dan arahkan ke folder sample-bots/csharp
