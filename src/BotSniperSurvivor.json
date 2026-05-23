@@ -1,0 +1,6 @@
+{
+  "name": "BotSniperSurvivor",
+  "version": "1.0",
+  "authors": ["Jojo Marpaung"],
+  "description": "Bot sniper versi survival untuk mode banyak musuh: strafe movement, dynamic firepower, radar lock, dan anti-wall."
+}
