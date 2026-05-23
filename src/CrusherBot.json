@@ -1,0 +1,15 @@
+{
+  "name": "CrusherBot",
+  "version": "1.0",
+  "authors": [
+    "Xjashoru"
+  ],
+  "description": "",
+  "homepage": "",
+  "countryCodes": [
+    "id",
+    "dk"
+  ],
+  "platform": ".Net 10.0",
+  "programmingLang": "C# 10.0"
+}
