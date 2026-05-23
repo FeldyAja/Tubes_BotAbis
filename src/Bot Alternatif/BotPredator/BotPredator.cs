@@ -82,7 +82,7 @@ public class BotPredator : Bot
     // Berhasil tabrak → mundur, arahkan laras, tembak 3, langsung maju lagi
     public override void OnHitBot(HitBotEvent e)
     {
-        Back(40);
+        Back(1);
         TurnGunLeft(GunBearingTo(targetX, targetY)); // blocking: laras terarah dulu
         Fire(3);
         SetForward(10000);
