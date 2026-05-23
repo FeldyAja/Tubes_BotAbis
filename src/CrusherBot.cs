@@ -1,272 +1,323 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
-using Robocode;
-using Robocode.Util;
+using Robocode.TankRoyale.BotApi;
+using Robocode.TankRoyale.BotApi.Events;
 
-namespace MyRobots
+public class CrusherBot : Bot
 {
-    public class CrusherBot : Bot
+    static void Main(string[] args) => new CrusherBot().Start();
+
+    // ── Tuning constants ──────────────────────────────────────────
+    const double WALL_MARGIN        = 80;   // stay away from walls
+    const double DANGER_RADIUS      = 150;  // "too close" threshold
+    const double BULLET_SPEED_BASE  = 20;   // approx bullet velocity
+    const double FIRE_POWER_MAX     = 3.0;
+    const double FIRE_POWER_MIN     = 0.5;
+    const double LOW_ENERGY         = 30;   // switch to survival mode
+
+    // ── State ─────────────────────────────────────────────────────
+    readonly Dictionary<int, EnemyInfo> _enemies = new();
+    int    _targetId    = -1;
+    double _movementDir = 1;    // 1 = forward, -1 = reverse
+    int    _moveTimer   = 0;
+    bool   _dodgeMode   = false;
+    int    _dodgeTimer  = 0;
+    int    _roundNumber = 0;
+
+    // ══════════════════════════════════════════════════════════════
+    // Run — main loop
+    // ══════════════════════════════════════════════════════════════
+    public override void Run()
     {
-        // ── Robot state ──────────────────────────────────────────────
-        private enum Mode { Hunt, Crush }
-        private Mode _mode = Mode.Hunt;
+        _roundNumber++;
 
-        // ── Enemy data ───────────────────────────────────────────────
-        private string _enemyName     = null;
-        private double _enemyX        = 0;
-        private double _enemyY        = 0;
-        private double _enemyDistance = 0;
-        private double _enemyHeadingRad = 0;
-        private double _enemyVelocity = 0;
-        private double _enemyEnergy   = 100;
-        private int    _lostTicks     = 0;          // ticks since last scan
-        private const int LostTimeout = 15;         // ticks before giving up lock
+        // Stylish red-and-black colour scheme
+        BodyColor   = Color.FromArgb(20,  20,  20);
+        TurretColor = Color.FromArgb(200, 30,  30);
+        RadarColor  = Color.FromArgb(255, 80,  0);
+        BulletColor = Color.FromArgb(255, 200, 0);
+        ScanColor   = Color.FromArgb(255, 60,  60);
 
-        // ── Movement ─────────────────────────────────────────────────
-        private int    _orbitDir      = 1;          // 1=clockwise, -1=counter
-        private double _orbitRadius   = 300;        // start far, spiral in
-        private const double MinOrbitRadius  = 30;  // ram distance
-        private const double OrbitShrinkRate = 4;   // pixels closer per tick
+        // Decouple radar from gun so we can spin it freely
+        // (Tank Royale does this automatically per turn)
 
-        // ── Scan ─────────────────────────────────────────────────────
-        private double _scanDir       = 1;          // 1=right, -1=left
-        private const double ScanSpeed = 20;        // degrees per tick in hunt
-
-        // ============================================================
-        //  MAIN LOOP
-        // ============================================================
-        public override void Run()
+        while (true)
         {
-            BodyColor   = Color.FromArgb(20,  20,  20);
-            GunColor    = Color.FromArgb(255, 60,  0);
-            RadarColor  = Color.FromArgb(255, 200, 0);
-            BulletColor = Color.FromArgb(255, 80,  0);
-            ScanColor   = Color.FromArgb(255, 255, 100);
+            // Pick the most dangerous/nearest enemy as our primary target
+            UpdateTarget();
 
-            // Gun follows radar exactly — they are ONE unit
-            IsAdjustGunForRobotTurn   = true;
-            IsAdjustRadarForRobotTurn = true;
-            IsAdjustRadarForGunTurn   = false;  // radar & gun turn together
-
-            while (true)
+            if (_targetId >= 0 && _enemies.TryGetValue(_targetId, out var tgt))
             {
-                _lostTicks++;
-
-                // If we haven't scanned the enemy for too long → back to Hunt
-                if (_mode == Mode.Crush && _lostTicks > LostTimeout)
-                    EnterHuntMode();
-
-                if (_mode == Mode.Hunt)
-                    DoHunt();
-                else
-                    DoCrush();
-
-                Execute();
+                AimAndFire(tgt);
             }
-        }
-
-        
-        private void DoHunt()
-        {
-            // Spin radar+gun together (gun offset = 0 relative to radar)
-            SetTurnGunRight(ScanSpeed * _scanDir);   // gun leads
-            // radar is glued to gun (IsAdjustRadarForGunTurn = false)
-            // so radar follows gun automatically; we don't need separate radar turn
-
-            // Slowly patrol toward center so we don't get cornered
-            double cx = BattleFieldWidth  / 2.0;
-            double cy = BattleFieldHeight / 2.0;
-            double angleToCenter = Math.Atan2(cx - X, cy - Y) * 180.0 / Math.PI;
-            SetTurnRight(NormalizeBearing(angleToCenter - Heading));
-            MaxVelocity = 4;
-            SetAhead(80);
-        }
-
-        // ============================================================
-        //  CRUSH MODE — lock radar+gun, spiral in, ram & fire
-        // ============================================================
-        private void DoCrush()
-        {
-            // ── 1. Radar+Gun lock on enemy ───────────────────────────
-            // Absolute bearing to enemy
-            double absBearingRad = Math.Atan2(_enemyX - X, _enemyY - Y);
-
-            // Turn GUN to face enemy (radar is glued to gun)
-            double gunTurn = Utils.NormalRelativeAngle(absBearingRad - GunHeadingRadians);
-            SetTurnGunRightRadians(gunTurn * 1.9);  // overshoot to stay locked
-
-            // ── 2. Fire — predictive targeting ──────────────────────
-            double firePower = _enemyDistance < 100 ? 3.0
-                             : _enemyDistance < 250 ? 2.0
-                             : Energy < 20          ? 1.0
-                                                    : 1.5;
-
-            double bulletSpeed = 20.0 - 3.0 * firePower;
-            long   ticks       = (long)(_enemyDistance / bulletSpeed);
-
-            double futureX = _enemyX + Math.Sin(_enemyHeadingRad) * _enemyVelocity * ticks;
-            double futureY = _enemyY + Math.Cos(_enemyHeadingRad) * _enemyVelocity * ticks;
-            futureX = Clamp(futureX, 18, BattleFieldWidth  - 18);
-            futureY = Clamp(futureY, 18, BattleFieldHeight - 18);
-
-            double aimAngle  = Math.Atan2(futureX - X, futureY - Y);
-            double aimOffset = Utils.NormalRelativeAngle(aimAngle - GunHeadingRadians);
-
-            if (Math.Abs(aimOffset) < DegToRad(6) && GunHeat == 0)
-                SetFire(firePower);
-
-            // ── 3. Body — spiral orbit getting closer ────────────────
-            // Shrink orbit radius each tick
-            _orbitRadius = Math.Max(MinOrbitRadius, _orbitRadius - OrbitShrinkRate);
-
-            // Orbit: turn body so enemy is 90° to side, then drive toward them
-            double bodyBearing = NormalizeBearing(
-                Math.Atan2(_enemyX - X, _enemyY - Y) * 180.0 / Math.PI - Heading);
-
-            // Strafe angle: 90° offset in orbit direction
-            double strafeAngle = bodyBearing + 90.0 * _orbitDir;
-            SetTurnRight(NormalizeBearing(strafeAngle));
-
-            // Speed: fast when far, slow when close (controlled ram)
-            double speed = _enemyDistance > 200 ? 8.0
-                         : _enemyDistance > 80  ? 6.0
-                                                 : 4.0;
-            MaxVelocity = speed;
-
-            // Always drive forward — orbit + spiral naturally closes distance
-            SetAhead(200);
-
-            // ── 4. Wall avoidance ────────────────────────────────────
-            AvoidWalls();
-        }
-
-        // ============================================================
-        //  EVENT: Enemy scanned
-        // ============================================================
-        public override void OnScannedRobot(ScannedRobotEvent e)
-        {
-            // Accept any robot in Hunt mode; in Crush mode prefer same target
-            if (_mode == Mode.Crush && _enemyName != null && e.Name != _enemyName)
+            else
             {
-                if (e.Distance >= _enemyDistance) return; // ignore farther robots
-                // Closer enemy found — switch target
+                // No target — sweep radar full circle
+                TurnRadarRight(45);
             }
 
-            // ── Detect incoming bullet (energy drop) → dodge ────────
-            double energyDrop = _enemyEnergy - e.Energy;
-            if (energyDrop > 0.09 && energyDrop <= 3.0)
-                _orbitDir *= -1;
-
-            // ── Store enemy data ─────────────────────────────────────
-            _enemyName       = e.Name;
-            _enemyDistance   = e.Distance;
-            _enemyHeadingRad = e.HeadingRadians;
-            _enemyVelocity   = e.Velocity;
-            _enemyEnergy     = e.Energy;
-            _lostTicks       = 0;
-
-            double absBearing = HeadingRadians + e.BearingRadians;
-            _enemyX = X + e.Distance * Math.Sin(absBearing);
-            _enemyY = Y + e.Distance * Math.Cos(absBearing);
-
-            // ── Switch to Crush mode ─────────────────────────────────
-            if (_mode == Mode.Hunt)
-                EnterCrushMode();
+            PerformMovement();
+            HandleDodge();
         }
-
-        // ============================================================
-        //  EVENT: Enemy dies → back to Hunt immediately
-        // ============================================================
-        public override void OnRobotDeath(RobotDeathEvent e)
-        {
-            if (e.Name == _enemyName)
-                EnterHuntMode();
-        }
-
-        // ============================================================
-        //  EVENT: Bullet hit enemy — we're on target
-        // ============================================================
-        public override void OnBulletHit(BulletHitEvent e)
-        {
-            // Keep closing in aggressively
-            _orbitRadius = Math.Max(MinOrbitRadius, _orbitRadius - 10);
-        }
-
-        // ============================================================
-        //  EVENT: Hit by bullet → flip orbit direction
-        // ============================================================
-        public override void OnHitByBullet(HitByBulletEvent e)
-        {
-            _orbitDir *= -1;
-        }
-
-        // ============================================================
-        //  EVENT: Rammed wall
-        // ============================================================
-        public override void OnHitWall(HitWallEvent e)
-        {
-            _orbitDir *= -1;
-        }
-
-        // ============================================================
-        //  EVENT: Rammed robot
-        // ============================================================
-        public override void OnHitRobot(HitRobotEvent e)
-        {
-            // We've reached ram distance — unload everything
-            Fire(3.0);
-        }
-
-        // ============================================================
-        //  MODE SWITCHES
-        // ============================================================
-        private void EnterHuntMode()
-        {
-            _mode        = Mode.Hunt;
-            _enemyName   = null;
-            _orbitRadius = 300;     // reset spiral radius for next target
-            _lostTicks   = 0;
-            Out.WriteLine("[HUNT] Scanning for targets...");
-        }
-
-        private void EnterCrushMode()
-        {
-            _mode      = Mode.Crush;
-            _lostTicks = 0;
-            Out.WriteLine($"[CRUSH] Target acquired: {_enemyName}");
-        }
-
-        // ============================================================
-        //  WALL AVOIDANCE
-        // ============================================================
-        private void AvoidWalls()
-        {
-            const double margin = 50;
-            bool nearWall = X < margin || X > BattleFieldWidth  - margin ||
-                            Y < margin || Y > BattleFieldHeight - margin;
-            if (nearWall)
-            {
-                double cx = BattleFieldWidth  / 2.0;
-                double cy = BattleFieldHeight / 2.0;
-                double ang = Math.Atan2(cx - X, cy - Y) * 180.0 / Math.PI;
-                SetTurnRight(NormalizeBearing(ang - Heading));
-                SetAhead(60);
-            }
-        }
-
-        // ============================================================
-        //  HELPERS
-        // ============================================================
-        private static double NormalizeBearing(double angle)
-        {
-            while (angle >  180.0) angle -= 360.0;
-            while (angle < -180.0) angle += 360.0;
-            return angle;
-        }
-
-        private static double DegToRad(double deg) => deg * Math.PI / 180.0;
-
-        private static double Clamp(double v, double min, double max)
-            => Math.Max(min, Math.Min(max, v));
     }
+
+    // ══════════════════════════════════════════════════════════════
+    // Targeting — predictive (linear extrapolation)
+    // ══════════════════════════════════════════════════════════════
+    private void AimAndFire(EnemyInfo e)
+    {
+        double firePower = ChooseFirePower(e.Distance);
+        double bulletSpeed = BULLET_SPEED_BASE - 3 * firePower;
+
+        // Estimate turns for bullet to travel
+        double ticks = e.Distance / bulletSpeed;
+
+        // Predict enemy position
+        double futureX = e.X + Math.Cos(e.HeadingRad) * e.Speed * ticks;
+        double futureY = e.Y + Math.Sin(e.HeadingRad) * e.Speed * ticks;
+
+        // Clamp to arena bounds so we don't shoot at a ghost
+        futureX = Math.Max(WALL_MARGIN, Math.Min(ArenaWidth  - WALL_MARGIN, futureX));
+        futureY = Math.Max(WALL_MARGIN, Math.Min(ArenaHeight - WALL_MARGIN, futureY));
+
+        // Aim gun at predicted position
+        double gunBearing = GunBearingTo(futureX, futureY);
+        TurnGunLeft(gunBearing);
+
+        // Radar lock on actual position
+        double radarBearing = RadarBearingTo(e.X, e.Y);
+        TurnRadarLeft(radarBearing * 2); // over-rotate for radar lock
+
+        // Fire only when gun is roughly aligned
+        if (Math.Abs(GunBearingTo(futureX, futureY)) < 5 && GunHeat == 0)
+        {
+            Fire(firePower);
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // Movement — anti-gravity + strafing
+    // ══════════════════════════════════════════════════════════════
+    private void PerformMovement()
+    {
+        if (_dodgeMode) return; // dodge handler takes over
+
+        // Compute anti-gravity vector
+        double forceX = 0, forceY = 0;
+
+        // Repel from walls
+        forceX += RepelForce(X,           1.0);
+        forceX -= RepelForce(ArenaWidth  - X, 1.0);
+        forceY += RepelForce(Y,           1.0);
+        forceY -= RepelForce(ArenaHeight - Y, 1.0);
+
+        // Repel from each enemy
+        foreach (var e in _enemies.Values)
+        {
+            double dist = e.Distance;
+            if (dist < 1) dist = 1;
+            double strength = 5000.0 / (dist * dist);
+            double angle = Math.Atan2(Y - e.Y, X - e.X);
+            forceX += Math.Cos(angle) * strength;
+            forceY += Math.Sin(angle) * strength;
+        }
+
+        // Translate force vector into movement
+        if (forceX != 0 || forceY != 0)
+        {
+            double targetAngle = Math.Atan2(forceY, forceX) * 180.0 / Math.PI;
+            double bearing = NormalizeBearing(targetAngle - Direction);
+
+            if (Math.Abs(bearing) > 90)
+            {
+                // Shorter to go in reverse
+                bearing = NormalizeBearing(bearing + 180);
+                TurnLeft(bearing);
+                Back(50);
+            }
+            else
+            {
+                TurnLeft(bearing);
+                Forward(50);
+            }
+        }
+        else
+        {
+            // Default oscillating movement so we're never a sitting duck
+            _moveTimer--;
+            if (_moveTimer <= 0)
+            {
+                _movementDir *= -1;
+                _moveTimer = 15 + new Random().Next(10);
+            }
+            Forward(80 * _movementDir);
+            TurnLeft(15 * _movementDir);
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // Bullet dodging — triggered when enemy energy drops (they fired)
+    // ══════════════════════════════════════════════════════════════
+    private void HandleDodge()
+    {
+        if (_dodgeMode)
+        {
+            // Strafe perpendicular to target
+            TurnLeft(90);
+            Forward(60 * _movementDir);
+            _dodgeTimer--;
+            if (_dodgeTimer <= 0) _dodgeMode = false;
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // Fire power — scales with distance & own energy
+    // ══════════════════════════════════════════════════════════════
+    private double ChooseFirePower(double distance)
+    {
+        if (Energy < LOW_ENERGY)
+            return FIRE_POWER_MIN; // survival mode
+
+        if (distance < 100)  return FIRE_POWER_MAX;
+        if (distance < 200)  return 2.0;
+        if (distance < 350)  return 1.5;
+        return FIRE_POWER_MIN;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // Target selection — nearest enemy with lowest energy
+    // ══════════════════════════════════════════════════════════════
+    private void UpdateTarget()
+    {
+        if (_enemies.Count == 0) { _targetId = -1; return; }
+
+        double bestScore = double.MaxValue;
+        int    bestId    = -1;
+
+        foreach (var kv in _enemies)
+        {
+            var e = kv.Value;
+            // Score = distance - (we prefer close & weak enemies)
+            double score = e.Distance + e.Energy * 2;
+            if (score < bestScore) { bestScore = score; bestId = kv.Key; }
+        }
+
+        _targetId = bestId;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // Events
+    // ══════════════════════════════════════════════════════════════
+
+    public override void OnScannedBot(ScannedBotEvent e)
+    {
+        // Detect if enemy fired (energy dropped)
+        if (_enemies.TryGetValue(e.ScannedBotId, out var prev))
+        {
+            double energyDrop = prev.Energy - e.Energy;
+            if (energyDrop > 0.09 && energyDrop <= 3.1)
+            {
+                // Enemy likely fired — dodge!
+                _dodgeMode  = true;
+                _dodgeTimer = 8;
+                _movementDir *= -1; // switch strafe direction
+            }
+        }
+
+        // Update or add enemy record
+        _enemies[e.ScannedBotId] = new EnemyInfo
+        {
+            X          = e.X,
+            Y          = e.Y,
+            Energy     = e.Energy,
+            Speed      = e.Speed,
+            HeadingRad = e.Direction * Math.PI / 180.0,
+            Distance   = DistanceTo(e.X, e.Y),
+            LastSeen   = TurnNumber
+        };
+    }
+
+    public override void OnHitBot(HitBotEvent e)
+    {
+        // Ram bonus: if we ram them, fire hard
+        double power = e.Energy > 16 ? 3 : e.Energy > 4 ? 2 : 1;
+        Fire(power);
+
+        // Back off slightly then re-engage
+        Back(30);
+        TurnToFaceTarget(e.X, e.Y);
+        Forward(50);
+    }
+
+    public override void OnHitWall(HitWallEvent e)
+    {
+        // Bounce off the wall
+        Back(40);
+        _movementDir *= -1;
+        TurnLeft(30 + new Random().Next(60));
+    }
+
+    public override void OnBotDeath(BotDeathEvent e)
+    {
+        // Remove dead bot from tracking
+        _enemies.Remove(e.VictimId);
+        if (_targetId == e.VictimId) _targetId = -1;
+    }
+
+    public override void OnBulletHit(BulletHitBotEvent e)
+    {
+        // Hit confirmed — continue pressing advantage
+        if (_enemies.TryGetValue(e.VictimId, out var victim))
+        {
+            victim.Energy -= GetBulletDamage(e.Bullet.Power);
+        }
+    }
+
+    public override void OnHitByBullet(HitByBulletEvent e)
+    {
+        // Immediately dodge after being hit
+        _dodgeMode  = true;
+        _dodgeTimer = 10;
+        _movementDir *= -1;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // Helpers
+    // ══════════════════════════════════════════════════════════════
+
+    private void TurnToFaceTarget(double x, double y)
+    {
+        double bearing = BearingTo(x, y);
+        TurnLeft(bearing);
+    }
+
+    private static double RepelForce(double dist, double power)
+    {
+        if (dist < 1) dist = 1;
+        return power * 2000.0 / (dist * dist);
+    }
+
+    private static double NormalizeBearing(double angle)
+    {
+        while (angle >  180) angle -= 360;
+        while (angle < -180) angle += 360;
+        return angle;
+    }
+
+    private static double GetBulletDamage(double power) => 4 * power;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Enemy tracking record
+// ══════════════════════════════════════════════════════════════════
+public class EnemyInfo
+{
+    public double X          { get; set; }
+    public double Y          { get; set; }
+    public double Energy     { get; set; }
+    public double Speed      { get; set; }
+    public double HeadingRad { get; set; }
+    public double Distance   { get; set; }
+    public int    LastSeen   { get; set; }
 }
