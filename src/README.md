@@ -37,83 +37,69 @@ Heuristic : Maksimalkan Bullet Damage Bonus dengan selalu menggunakan firepower 
 - Robocode Tank Royale Game Engine (versi modifikasi asisten)
 - Java JDK 17
 
-**Cara Menjalankan Bot:**
-**Windows**
-Di bawah ini kasus sample bot bawaan github
-Build Game Engine 
-Buka Powershell, lalu jalankan  :
+Cara Menjalankan Bot — Robocode Tank Royale
 
-cd tank-royale-0.30.0
+🪟 Windows
+
+Kasus: menggunakan sample bot bawaan GitHub
+
+1. Build Game Engine
+Buka PowerShell, lalu jalankan:
+powershellcd tank-royale-0.30.0
 ./gradlew :gui-app:clean
 ./gradlew :gui-app:build
-
-
-Jalankan Game Engine
-Buka PowerShell baru, lalu jalankan :
-
-_cd tank-royale-0.30.0
-_java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar__
-
-
-Build Bot
-Buka PowerShell baru, masuk ke folder bot, lalu jalankan : 
-
-_cd sample-bots/csharp/NamaBot
-_dotnet clean_
-_dotnet restore_
-_dotnet build_
-_
-
-Jalankan Bot 
-Masih di terminal yang sama, jalankan: 
-
-_$env:SERVER_SECRET = "isi_dengan_secret_dari_server.properties"
-_dotnet run_
-
-Mulai Pertandingan di GUI
-1. Di GUI Robocode, klik Config → Bot Root Directories
-2. Klik Add dan arahkan ke folder sample-bots/csharp 
-3. Klik OK 
-4. Klik Battle → Start Battle Di bagian Joined Bots, pilih bot yang sudah terhubung
-5. Klik Add All lalu Start Battle
-
-
-	
-
-
-**Linux**
-Di bawah ini kasus bukan sample bots bawaan github
-Build Game Engine
-Buka Vscode terminal ubuntu, lalu jalankan  :
-
-_cd tank-royale-0.30.0_
-_./gradlew :gui-app:clean_
-_./gradlew :gui-app:build_
-
-Jalankan Game Engine
-Buka terminal baru, lalu jalankan :
-
-_cd tank-royale-0.30.0_
-_java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar_
-
-Lalu mulai local server
-
-Build Bot
-Buka terminal baru, masuk ke folder bot, jalankan:
-_dotnet clean_
-_dotnet restore_
-_dotnet build_
-
-Jalankan Bot
+2. Jalankan Game Engine
+Buka PowerShell baru, lalu jalankan:
+powershellcd tank-royale-0.30.0
+java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar
+3. Build Bot
+Buka PowerShell baru, masuk ke folder bot, lalu jalankan:
+powershellcd sample-bots/csharp/NamaBot
+dotnet clean
+dotnet restore
+dotnet build
+4. Jalankan Bot
 Masih di terminal yang sama, jalankan:
-_export SERVER_SECRET=isi_dengan_secret_dari_server.properties_
-_chmod +x NamaFolderBot.sh_
-_./NamaFolderBot.sh_
+powershell$env:SERVER_SECRET = "isi_dengan_secret_dari_server.properties"
+dotnet run
+5. Mulai Pertandingan di GUI
 
-Mulai Pertandingan di GUI
-Bila saat start local server hasilnya tidak merah, melainkan success hijau, maka:
-Karena file sh sudah di jalankan, cek di Start Battle pada Game Engine
-Bila berhasil, maka ada nama bot di kotak local/remote server di kiri bawah
-Add bot bot tersebut
-Lalu start battle untuk memulai pertempuran antar bot yang dipilih
+Di GUI Robocode, klik Config → Bot Root Directories
+Klik Add dan arahkan ke folder sample-bots/csharp
+Klik OK
+Klik Battle → Start Battle
+Di bagian Joined Bots, pilih bot yang sudah terhubung
+Klik Add All lalu Start Battle
 
+
+🐧 Linux
+
+Kasus: menggunakan bot buatan sendiri (bukan sample bot GitHub)
+
+1. Build Game Engine
+Buka terminal VSCode (Ubuntu), lalu jalankan:
+bashcd tank-royale-0.30.0
+./gradlew :gui-app:clean
+./gradlew :gui-app:build
+2. Jalankan Game Engine
+Buka terminal baru, lalu jalankan:
+bashcd tank-royale-0.30.0
+java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar
+Kemudian klik Start Local Server di GUI.
+3. Build Bot
+Buka terminal baru, masuk ke folder bot, lalu jalankan:
+bashdotnet clean
+dotnet restore
+dotnet build
+4. Jalankan Bot
+Masih di terminal yang sama, jalankan:
+bashexport SERVER_SECRET=isi_dengan_secret_dari_server.properties
+chmod +x NamaFolderBot.sh
+./NamaFolderBot.sh
+5. Mulai Pertandingan di GUI
+Jika saat Start Local Server hasilnya hijau (success):
+
+Buka menu Start Battle di Game Engine
+Jika bot berhasil terhubung, nama bot akan muncul di kotak local/remote server di kiri bawah
+Pilih bot yang ingin bertanding, lalu klik Add
+Klik Start Battle untuk memulai pertempuran
