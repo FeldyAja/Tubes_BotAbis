@@ -69,7 +69,7 @@ Masih di terminal yang sama, jalankan:
 
 _$env:SERVER_SECRET = "isi_dengan_secret_dari_server.properties"
 _dotnet run_
-_
+
 Mulai Pertandingan di GUI
 1. Di GUI Robocode, klik Config → Bot Root Directories
 2. Klik Add dan arahkan ke folder sample-bots/csharp 
@@ -86,24 +86,23 @@ Di bawah ini kasus bukan sample bots bawaan github
 Build Game Engine
 Buka Vscode terminal ubuntu, lalu jalankan  :
 
-cd tank-royale-0.30.0
-_./gradlew :gui-app:clean
-_./gradlew :gui-app:build
-__
+_cd tank-royale-0.30.0_
+_./gradlew :gui-app:clean_
+_./gradlew :gui-app:build_
 
 Jalankan Game Engine
 Buka terminal baru, lalu jalankan :
 
 _cd tank-royale-0.30.0_
-_java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar
+_java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar_
 
-_Lalu mulai local server
+Lalu mulai local server
 
 Build Bot
 Buka terminal baru, masuk ke folder bot, jalankan:
-dotnet clean
-dotnet restore
-dotnet build
+_dotnet clean_
+_dotnet restore_
+_dotnet build_
 
 Jalankan Bot
 Masih di terminal yang sama, jalankan:
