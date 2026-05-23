@@ -2,8 +2,8 @@
 
 ## Anggota Kelompok
 - [Feldy] - [124140083]
-- [Nama 2] - [NIM]
-- [Nama 3] - [NIM]
+- [Jojo Marpaung] - [124140191]
+- [Andreas Silalahi] - [124140148]
 
 ---
 
