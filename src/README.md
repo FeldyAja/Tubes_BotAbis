@@ -1,7 +1,7 @@
 # Tubes Stima - Robocode Tank Royale Bots
 
 ## Anggota Kelompok
-- [Nama 1] - [NIM]
+- [Feldy] - [124140083]
 - [Nama 2] - [NIM]
 - [Nama 3] - [NIM]
 
