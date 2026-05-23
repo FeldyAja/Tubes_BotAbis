@@ -72,7 +72,7 @@ Di bagian Joined Bots, pilih bot yang sudah terhubung
 Klik Add All lalu Start Battle
 
 
-🐧 Linux
+** Linux**
 
 Kasus: menggunakan bot buatan sendiri (bukan sample bot GitHub)
 
