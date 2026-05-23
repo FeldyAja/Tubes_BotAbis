@@ -51,25 +51,25 @@ cd tank-royale-0.30.0
 Jalankan Game Engine
 Buka PowerShell baru, lalu jalankan :
 
-cd tank-royale-0.30.0
-java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar
+_cd tank-royale-0.30.0
+_java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar__
 
 
 Build Bot
 Buka PowerShell baru, masuk ke folder bot, lalu jalankan : 
 
-cd sample-bots/csharp/NamaBot
-dotnet clean
-dotnet restore
-dotnet build
-
+_cd sample-bots/csharp/NamaBot
+_dotnet clean_
+_dotnet restore_
+_dotnet build_
+_
 
 Jalankan Bot 
 Masih di terminal yang sama, jalankan: 
 
-$env:SERVER_SECRET = "isi_dengan_secret_dari_server.properties"
-dotnet run
-
+_$env:SERVER_SECRET = "isi_dengan_secret_dari_server.properties"
+_dotnet run_
+_
 Mulai Pertandingan di GUI
 1. Di GUI Robocode, klik Config → Bot Root Directories
 2. Klik Add dan arahkan ke folder sample-bots/csharp 
@@ -87,17 +87,17 @@ Build Game Engine
 Buka Vscode terminal ubuntu, lalu jalankan  :
 
 cd tank-royale-0.30.0
-./gradlew :gui-app:clean
-./gradlew :gui-app:build
-
+_./gradlew :gui-app:clean
+_./gradlew :gui-app:build
+__
 
 Jalankan Game Engine
 Buka terminal baru, lalu jalankan :
 
-cd tank-royale-0.30.0
-java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar
+_cd tank-royale-0.30.0_
+_java -jar ./gui-app/build/libs/robocode-tankroyale-gui-0.30.0.jar
 
-Lalu mulai local server
+_Lalu mulai local server
 
 Build Bot
 Buka terminal baru, masuk ke folder bot, jalankan:
@@ -107,9 +107,9 @@ dotnet build
 
 Jalankan Bot
 Masih di terminal yang sama, jalankan:
-export SERVER_SECRET=isi_dengan_secret_dari_server.properties
-chmod +x NamaFolderBot.sh
-./NamaFolderBot.sh
+_export SERVER_SECRET=isi_dengan_secret_dari_server.properties_
+_chmod +x NamaFolderBot.sh_
+_./NamaFolderBot.sh_
 
 Mulai Pertandingan di GUI
 Bila saat start local server hasilnya tidak merah, melainkan success hijau, maka:
